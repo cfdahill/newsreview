@@ -22,46 +22,43 @@ mongoose.connect("mongodb://localhost/newsreview");
 
 //"Scrape, scrape it up, scrape it up" - Weird Al Yankovic (hopefully)
 app.get("/scrape", (req, res) => {
-    request("https://www.sciencenews.org/#", (error, response, html) => {
+    request("https://www.sciencenews.org/", (error, response, html) => {
         if (error) throw error;
 
         const $ = cheerio.load(html);
 
         $("article.node-teaser").each((i, element) => {
-            const ease = $(this)
+            const ease = $(element)
                 .find("h2.node-title")
                 .children();
 
             let result = {};
 
-            result.headline = ease.text();
-            result.url = ease.attr("href");
-            result.summary = $(this)
+            result.headline = ease.text().trim();
+            result.url = ease.attr("href").trim();
+            result.summary = $(element)
                 .children("div.content")
-                .text();
-
+                .text().trim();
+            //console.log(result);
             //This should insert new articles without actually replacing old ones.  Will update old articles but that should still save the notes
-            db.Article.save({result}, (error, data) => {
-                if (error) throw error;
-                res.send(data);
-            });
+            db.Article.create(result)
+                .then(dbArticle => console.log(dbArticle))
+                .catch(error => res.json(error));
         });
+        res.send("Scrape Complete")
     });
 });
 
 //gets articles from the db
 app.get("/articles", (req, res) => {
-    db.Article.find({}, (error, data) => {
-        if (error) throw error;
-        res.json(data);
-    });
+    db.Article.find({})
+        .then(data => res.json(data))
+        .catch(error => res.json(error));
 });
 
 //get one article
 app.get("/articles/:id", (req, res) => {
-    db.Article.find({
-            _id: req.params.id
-        })
+    db.Article.findOne({_id: req.params.id})
         .populate("note")
         .then(data => res.json(data))
         .catch(error => res.json(error));
@@ -69,17 +66,18 @@ app.get("/articles/:id", (req, res) => {
 
 //add notes to an article
 app.post("/articles/:id", (req, res) => {
-    db.Notes.create(req.body)
-        .then(data => {
-            db.Article.fidOneAndUpdate({
-                _id: req.params.id
-            }, {
-                note: dbArticle._id
-            }, {
-                new: true
-            });
-        })
-        .catch(error => res.json(error));
+    db.Note.create(req.body)
+      .then(dbNote => {
+        console.log("line 71: " + dbNote);
+        console.log("line 72: " + req.params.id);
+        let dbArticle = db.Article.fidOneAndUpdate({_id: req.params.id}, {note: dbNote._id}, {new: true});
+        return dbArticle;    
+    })
+      .then(dbArticle => {
+          res.json(dbArticle)
+        console.log("line 78: " + dbArticle);
+      })
+      .catch(error => res.json(error));
 });
 
 

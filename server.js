@@ -75,7 +75,7 @@ app.post("/articles/:id", (req, res) => {
     })
       .then(dbArticle => {
           res.json(dbArticle)
-        console.log("line 78: " + dbArticle);
+        console.log("line 8: " + dbArticle);
       })
       .catch(error => res.json(error));
 });

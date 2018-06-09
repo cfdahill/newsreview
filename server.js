@@ -10,7 +10,7 @@ const cheerio = require("cheerio");
 
 const db = require("./models");
 
-app.set("PORT", (process.env.PORT || 2000));
+let PORT = process.env.PORT || 2000;
 const app = express();
 app.use(bodyParser.urlencoded({
     extended: true
@@ -94,4 +94,4 @@ app.post("/articles/:id", function (req, res) {
         .catch(error => res.json(error));
 });
 
-app.listen(app.get("PORT"), () => console.log("Get your scientific news on at localhost:" + app.get("PORT")));
+app.listen(PORT, () => console.log("Get your scientific news on at localhost:" + PORT));

@@ -10,15 +10,16 @@ const cheerio = require("cheerio");
 
 const db = require("./models");
 
-var PORT = 2000;
-
+app.set("PORT", (process.env.PORT || 2000));
 const app = express();
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost/newsreview");
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/newsreview";
+mongoose.Promise = Promise;
+mongoose.connect(MONGODB_URI);
 
 //"Scrape, scrape it up, scrape it up" - Weird Al Yankovic (hopefully)
 app.get("/scrape", (req, res) => {
@@ -79,6 +80,8 @@ app.get("/articles/:id", (req, res) => {
 //       })
 //       .catch(error => res.json(error));
 // });
+
+//should be exactly same as commented out code but this works and commented out does not
 app.post("/articles/:id", function (req, res) {
     db.Note.create(req.body)
         .then(dbNote => {
@@ -91,4 +94,4 @@ app.post("/articles/:id", function (req, res) {
         .catch(error => res.json(error));
 });
 
-app.listen(PORT, () => console.log("Get your scientific news on at localhost:" + PORT));
+app.listen(app.get("PORT"), () => console.log("Get your scientific news on at localhost:" + app.get("PORT")));

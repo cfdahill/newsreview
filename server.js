@@ -65,20 +65,30 @@ app.get("/articles/:id", (req, res) => {
 });
 
 //add notes to an article
-app.post("/articles/:id", (req, res) => {
+// app.post("/articles/:id", (req, res) => {
+//     db.Note.create(req.body)
+//       .then(dbNote => {
+//         console.log("line 71: " + dbNote);
+//         console.log("line 72: " + req.params.id);
+//         return db.Article.fidOneAndUpdate({_id: req.params.id}, {note: dbNote._id}, {new: true});
+//         console.log(dbArticle);    
+//     })
+//       .then(dbArticle => {
+//           res.json(dbArticle)
+//         console.log("line 8: " + dbArticle);
+//       })
+//       .catch(error => res.json(error));
+// });
+app.post("/articles/:id", function (req, res) {
     db.Note.create(req.body)
-      .then(dbNote => {
-        console.log("line 71: " + dbNote);
-        console.log("line 72: " + req.params.id);
-        let dbArticle = db.Article.fidOneAndUpdate({_id: req.params.id}, {note: dbNote._id}, {new: true});
-        return dbArticle;    
-    })
-      .then(dbArticle => {
-          res.json(dbArticle)
-        console.log("line 8: " + dbArticle);
-      })
-      .catch(error => res.json(error));
+        .then(dbNote => {
+            return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
+        })
+        .then(dbArticle => {
+            res.json(dbArticle)
+            console.log("line 8: " + dbArticle);
+        })
+        .catch(error => res.json(error));
 });
-
 
 app.listen(PORT, () => console.log("Get your scientific news on at localhost:" + PORT));
